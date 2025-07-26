@@ -453,13 +453,9 @@ exports("GetUsableItem", GetUsableItem)
 ---@param ... any Arguments for the callback, this will be sent to the callback and can be used to get certain values
 local function UseItem(itemName, ...)
     local itemData = GetUsableItem(itemName)
-    if type(itemData) ~= "table" then
-        return false
+    if type(itemData) == 'table' and itemData.func then
+        itemData.func(...)
     end
-    if not itemData.func then
-        return false
-    end
-    itemData.func(...)
 end
 exports("UseItem", UseItem)
 
@@ -493,11 +489,13 @@ end
 -- Shop Items
 local function SetupShopItems(shopItems)
 	local items = {}
+	local itemSlot = 0
 	if shopItems and next(shopItems) then
 		for _, item in pairs(shopItems) do
 			local itemInfo = QBCore.Shared.Items[item.name:lower()]
 			if itemInfo then
-				items[item.slot] = {
+				itemSlot = itemSlot + 1
+				items[itemSlot] = {
 					name = itemInfo["name"],
 					amount = tonumber(item.amount),
 					info = item.info or "",
@@ -509,7 +507,7 @@ local function SetupShopItems(shopItems)
 					useable = itemInfo["useable"],
 					price = item.price,
 					image = itemInfo["image"],
-					slot = item.slot,
+					slot = itemSlot,
 				}
 			end
 		end
